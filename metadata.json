@@ -1,0 +1,9 @@
+{
+  "name": "App Tab",
+  "description": "An extension for showing applications in tabs",
+  "uuid": "apptab@greenaltambe@github.com",
+  "settings-schema": "org.gnome.shell.extensions.apptab",
+  "shell-version": [
+    "50"
+  ]
+}
