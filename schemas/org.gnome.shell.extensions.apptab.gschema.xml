@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <schemalist>
-  <schema id="org.gnome.shell.extensions.apptab" path="/org/gnome/shell/extensions/apptab/">
+  <schema
+        id="org.gnome.shell.extensions.apptab"
+        path="/org/gnome/shell/extensions/apptab/"
+    >
     <key name="padding-inner" type="i">
       <default>8</default>
       <summary>Inner padding</summary>
@@ -10,6 +13,10 @@
       <default>true</default>
       <summary>Animation</summary>
       <description>Whether to animate window movement/resizing</description>
+    </key>
+    <key name="notification-text" type="s">
+        <default>'You are dumb!'</default>
+        <description>What text shows up in notification</description>
     </key>
   </schema>
 </schemalist>

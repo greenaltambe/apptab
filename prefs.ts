@@ -46,6 +46,17 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
     });
     paddingGroup.add(paddingInner);
 
+    const notificationGroup = new Adw.PreferencesGroup({
+      title: _("Notifications"),
+      description: _("What notification would you like?"),
+    });
+    page.add(notificationGroup);
+
+    const notificationTextBox = new Adw.EntryRow({
+      title: _("Notification text"),
+    });
+    notificationGroup.add(notificationTextBox);
+
     window.add(page);
 
     this._settings!.bind(
@@ -58,6 +69,12 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
       "padding-inner",
       paddingInner,
       "value",
+      Gio.SettingsBindFlags.DEFAULT,
+    );
+    this._settings!.bind(
+      "notification-text",
+      notificationTextBox,
+      "text",
       Gio.SettingsBindFlags.DEFAULT,
     );
 

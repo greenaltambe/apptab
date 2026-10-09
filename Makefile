@@ -5,11 +5,11 @@ DOMAIN=https://github.com/greenaltambe/apptab
 
 all: dist/extension.js
 
-node_modules/.package-lock.json: package.json
-	npm install
+node_modules/.modules.yaml: package.json pnpm-lock.yaml
+	pnpm install
 
-dist/extension.js dist/prefs.js: node_modules/.package-lock.json *.ts
-	npm run build
+dist/extension.js dist/prefs.js: node_modules/.modules.yaml *.ts
+	pnpm run build
 
 schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xml
 	glib-compile-schemas schemas
@@ -25,4 +25,4 @@ install: $(NAME).zip
 	gnome-extensions install --force $(NAME).zip
 
 clean:
-	@rm -rf dist node_modules $(NAME).zip
+	@rm -rf dist node_modules $(NAME).zip schemas/gschemas.compiled
