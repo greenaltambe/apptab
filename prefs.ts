@@ -17,66 +17,86 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
       iconName: "dialog-information-symbolic",
     });
 
-    const animationGroup = new Adw.PreferencesGroup({
-      title: _("Animation"),
-      description: _("Configure move/resize animation"),
+    // This group will have the settings to configure ui of the panel
+    const generalGroup = new Adw.PreferencesGroup({
+      title: _("General"),
+      description: _("General settings for the extension"),
     });
-    page.add(animationGroup);
+    page.add(generalGroup);
 
-    const animationEnabled = new Adw.SwitchRow({
-      title: _("Enabled"),
-      subtitle: _("Wether to animate windows"),
+    // This group will have settings relevent to the control of behavior of the extension
+    const behaviorGroup = new Adw.PreferencesGroup({
+      title: _("Behavior"),
+      description: _("Behavior settings for the extension"),
     });
-    animationGroup.add(animationEnabled);
+    page.add(behaviorGroup);
 
-    const paddingGroup = new Adw.PreferencesGroup({
-      title: _("Paddings"),
-      description: _("Configure the padding between windows"),
-    });
-    page.add(paddingGroup);
-
-    const paddingInner = new Adw.SpinRow({
-      title: _("Inner"),
-      subtitle: _("Padding between windows"),
+    // This controsl the height of panel
+    const panelHeight = new Adw.SpinRow({
+      title: _("Panel Height"),
+      subtitle: _("Height of the panel"),
       adjustment: new Gtk.Adjustment({
-        lower: 0,
-        upper: 1000,
+        lower: 24,
+        upper: 100,
         stepIncrement: 1,
       }),
     });
-    paddingGroup.add(paddingInner);
 
-    const notificationGroup = new Adw.PreferencesGroup({
-      title: _("Notifications"),
-      description: _("What notification would you like?"),
+    // This settings controls if all the windows from all workspaces should be shown in the panel or not
+    const showAllWindows = new Adw.SwitchRow({
+      title: _("Show All Windows"),
+      subtitle: _("Show windows from all the workspaces"),
     });
-    page.add(notificationGroup);
 
-    const notificationTextBox = new Adw.EntryRow({
-      title: _("Notification text"),
+    // This settins is keyboard shortcut to focus the next window in the panel
+    const focusNextWindow = new Adw.EntryRow({
+      title: _("Focus Next Windows"),
     });
-    notificationGroup.add(notificationTextBox);
 
+    // This settings is keyboard
+    const focusPreviousWindow = new Adw.EntryRow({
+      title: _("Focus Previous Windows"),
+    });
+
+    // Add the settings and groups to the window
+    generalGroup.add(panelHeight);
+    generalGroup.add(showAllWindows);
+
+    behaviorGroup.add(focusNextWindow);
+    behaviorGroup.add(focusPreviousWindow);
+
+    page.add(generalGroup);
+    page.add(behaviorGroup);
     window.add(page);
 
+    // Bind the settings to ui
     this._settings!.bind(
-      "animate",
-      animationEnabled,
-      "active",
-      Gio.SettingsBindFlags.DEFAULT,
-    );
-    this._settings!.bind(
-      "padding-inner",
-      paddingInner,
+      "panel-height",
+      panelHeight,
       "value",
       Gio.SettingsBindFlags.DEFAULT,
     );
     this._settings!.bind(
-      "notification-text",
-      notificationTextBox,
-      "text",
+      "show-all-windows",
+      showAllWindows,
+      "active",
       Gio.SettingsBindFlags.DEFAULT,
     );
+
+    focusNextWindow.text =
+      this._settings!.get_strv("focus-next-window")[0] ?? "";
+    focusPreviousWindow.text =
+      this._settings!.get_strv("focus-previous-window")[0] ?? "";
+
+    focusNextWindow.connect("changed", () => {
+      this._settings!.set_strv("focus-next-window", [focusNextWindow.text]);
+    });
+
+    focusPreviousWindow.connect("changed", () => {
+      this._settings!.set_strv("focus-previous-window", [
+        focusPreviousWindow.text,
+      ]);
+    });
 
     return Promise.resolve();
   }

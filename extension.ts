@@ -8,13 +8,11 @@ import St from "gi://St";
 
 export default class AppTab extends Extension {
   gsettings?: Gio.Settings;
-  animationsEnabled: Boolean = true;
   private _panel?: St.BoxLayout;
 
   enable(): void {
     // initialize settings first
     this.gsettings = this.getSettings();
-    this.animationsEnabled = this.gsettings.get_boolean("animate") ?? true;
 
     this._panel = new St.BoxLayout({
       vertical: false,
@@ -41,10 +39,10 @@ export default class AppTab extends Extension {
         ? currentFocusedWindow.get_title()
         : "No window focused",
     });
+
     const m = Main.layoutManager.primaryMonitor;
     this._panel.add_child(label);
   }
-
   disable(): void {
     if (this._panel) {
       Main.layoutManager.removeChrome(this._panel);

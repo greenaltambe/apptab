@@ -4,19 +4,21 @@
         id="org.gnome.shell.extensions.apptab"
         path="/org/gnome/shell/extensions/apptab/"
     >
-    <key name="padding-inner" type="i">
-      <default>8</default>
-      <summary>Inner padding</summary>
-      <description>Padding between windows</description>
-    </key>
-    <key name="animate" type="b">
-      <default>true</default>
-      <summary>Animation</summary>
-      <description>Whether to animate window movement/resizing</description>
-    </key>
-    <key name="notification-text" type="s">
-        <default>'You are dumb!'</default>
-        <description>What text shows up in notification</description>
-    </key>
-  </schema>
+       <key name="panel-height" type="i">
+           <default>32</default>
+           <summary>Height of the panel</summary>
+       </key>
+       <key name="show-all-windows" type="b">
+           <default>false</default>
+           <summary>Show windows from all workspaces.</summary>
+       </key>
+       <key name="focus-next-window" type="as">
+           <default><![CDATA[['<Super>j']]]></default>
+            <summary>Keybinding to focus the next window.</summary>
+       </key>
+       <key name="focus-previous-window" type="as">
+           <default><![CDATA[['<Super>k']]]></default>
+            <summary>Keybinding to focus the previous window.</summary>
+       </key>
+    </schema>
 </schemalist>
