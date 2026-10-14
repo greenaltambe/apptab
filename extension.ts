@@ -1,5 +1,6 @@
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
+import Clutter from "gi://Clutter";
 import Meta from "gi://Meta";
 import Shell from "gi://Shell";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
@@ -22,23 +23,30 @@ class WindowButton extends St.Button {
     });
 
     this._window = window;
-    this.add_style_class_name(
-      this._window.has_focus() ? "focused" : "unfocused",
-    );
 
     const container = new St.BoxLayout({
       vertical: false,
+      yAlign: Clutter.ActorAlign.CENTER,
     });
 
     const tracker = Shell.WindowTracker.get_default();
     const app = tracker.get_window_app(this._window);
     if (app) {
       const icon = app.create_icon_texture(24);
+      icon.set_y_align(Clutter.ActorAlign.CENTER);
       container.add_child(icon);
     }
     const label = new St.Label({
-      text: this._window.get_title(),
+      text: this._window.get_title() ?? "",
+      styleClass: "app-tab-window-label",
+      yAlign: Clutter.ActorAlign.CENTER,
     });
+    // titles are often empty at creation time, so keep the label in sync
+    this._window.connectObject(
+      "notify::title",
+      () => label.set_text(this._window.get_title() ?? ""),
+      this,
+    );
 
     container.add_child(label);
 
@@ -48,6 +56,7 @@ class WindowButton extends St.Button {
       () => {
         if (this._window) {
           this._window.activate(global.get_current_time());
+          this.add_style_class_name("focused-window-button");
         }
       },
       this,
@@ -66,8 +75,7 @@ class Panel extends St.BoxLayout {
 
   constructor(settings: Gio.Settings) {
     super({
-      // styleClass: "app-tab-panel",
-      style: `background-color: #000000; opacity: 0.6;`,
+      styleClass: "app-tab-panel",
       reactive: true,
     });
     this._settings = settings;

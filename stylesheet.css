@@ -1,0 +1,16 @@
+.app-tab-panel {
+    background-color: #000000; /*black background color just like gnome panel*/
+}
+
+.app-tab-window-button {
+    border-radius: 15px;
+}
+
+.focused-window-button {
+    background-color: gray; /*gray background color for focused window button*/
+}
+
+.app-tab-window-label {
+    color: #ffffff;
+    padding: 0 6px;
+}
