@@ -40,3 +40,4 @@ Other targets: `make pack` builds only the zip, and `make clean` removes build o
 3. Add a setting to make tabs vertical like sway/i3. (Most probably will not happen).
 4. Make the tabs in the panel draggable or add keyboard shortcut to reorder.
 5. Add button to close tabs/windows.
+6. Hide the panel when no window is open.
