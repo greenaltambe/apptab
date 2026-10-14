@@ -26,6 +26,7 @@ class WindowButton extends St.Button {
     this._window = window;
 
     const container = new St.BoxLayout({
+      styleClass: "app-tab-window-content",
       vertical: false,
       yAlign: Clutter.ActorAlign.CENTER,
     });
