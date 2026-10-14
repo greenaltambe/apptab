@@ -10,6 +10,7 @@
 
 .focused-window-button {
     background-color: gray; /*gray background color for focused window button*/
+    opacity: 0.5;
 }
 
 .app-tab-window-label {

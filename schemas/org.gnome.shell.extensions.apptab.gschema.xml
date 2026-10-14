@@ -13,11 +13,11 @@
            <summary>Show windows from all workspaces.</summary>
        </key>
        <key name="focus-next-window" type="as">
-           <default><![CDATA[['<Super>j']]]></default>
+           <default><![CDATA[['<Super>k']]]></default>
             <summary>Keybinding to focus the next window.</summary>
        </key>
        <key name="focus-previous-window" type="as">
-           <default><![CDATA[['<Super>k']]]></default>
+           <default><![CDATA[['<Super>j']]]></default>
             <summary>Keybinding to focus the previous window.</summary>
        </key>
     </schema>

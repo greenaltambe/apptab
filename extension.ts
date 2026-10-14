@@ -86,6 +86,8 @@ class Panel extends St.BoxLayout {
   }
 
   private _settings: Gio.Settings; // this will be the settings obj that will be passed as a parameter to the constructor of the panel class
+  private _watched = new Set<Meta.Window>(); // windows we already listen to for "unmanaged"
+  private _windows: (Meta.Window | null)[]; // this will be the list of windows that will be displayed in the panel
 
   constructor(settings: Gio.Settings) {
     super({
@@ -93,6 +95,7 @@ class Panel extends St.BoxLayout {
       reactive: true,
     });
     this._settings = settings;
+    this._windows = [];
 
     // Add the panel to the bottom of the screen
     Main.layoutManager.addChrome(this, {
@@ -112,11 +115,20 @@ class Panel extends St.BoxLayout {
     }
     this._syncWithOverview();
 
-    // Hide it whenever the overview opens.
-    Main.overview.connectObject("showing", () => this.hide(), this);
-
-    // Show it whenever the overview closes.
-    Main.overview.connectObject("hiding", () => this.show(), this);
+    // Hide it while the overview is open and show it again when it closes.
+    // A gesture (3 finger swipe) may not emit "showing" the same way as the
+    // keyboard/hot corner, so also sync on "shown"/"hidden", which always fire.
+    Main.overview.connectObject(
+      "showing",
+      () => this.hide(),
+      "shown",
+      () => this.hide(),
+      "hiding",
+      () => this.show(),
+      "hidden",
+      () => this._syncWithOverview(),
+      this,
+    );
 
     Main.layoutManager.connectObject(
       "monitors-changed",
@@ -127,19 +139,62 @@ class Panel extends St.BoxLayout {
     // Update the windows when a new window is created
     global.display.connectObject(
       "window-created",
-      (_display: any, window: Meta.Window) => {
-        this._updateWindows();
+      () => this._updateWindows(),
+    );
 
-        window.connect("unmanaged", () => {
-          this._updateWindows();
-        });
-      },
+    // Updae the focused window when keyboar window + j or window + k is pressed
+    Main.wm.addKeybinding(
+      "focus-next-window",
+      this._settings,
+      Meta.KeyBindingFlags.NONE,
+      Shell.ActionMode.NORMAL,
+      () => this._focusNextWindow(),
+    );
+    Main.wm.addKeybinding(
+      "focus-previous-window",
+      this._settings,
+      Meta.KeyBindingFlags.NONE,
+      Shell.ActionMode.NORMAL,
+      () => this._focusPreviousWindow(),
     );
   }
 
   private _syncWithOverview() {
     if (Main.overview.visible) this.hide();
     else this.show();
+  }
+
+  private _focusWindow(window: Meta.Window) {
+    if (!window) return;
+    window.activate(global.get_current_time());
+  }
+
+  // Move focus by `step` windows (1 = next, -1 = previous), clamped to the list.
+  // The focused index is looked up on every call so it can never be stale.
+  private _cycleFocus(step: number) {
+    const n = this._windows.length;
+    if (n === 0) return;
+
+    const current = this._windows.findIndex((w) => w?.has_focus());
+    // nothing focused (e.g. desktop): start from the first/last window
+    // stop at the first/last window instead of wrapping around
+    const index =
+      current >= 0
+        ? Math.min(n - 1, Math.max(0, current + step))
+        : step > 0
+          ? 0
+          : n - 1;
+
+    const target = this._windows[index];
+    if (target) this._focusWindow(target);
+  }
+
+  private _focusNextWindow() {
+    this._cycleFocus(1);
+  }
+
+  private _focusPreviousWindow() {
+    this._cycleFocus(-1);
   }
 
   // This function draws the panel on the screen at the bottom (later at top) of screen
@@ -153,14 +208,34 @@ class Panel extends St.BoxLayout {
     this._updateWindows();
   }
 
-  private _updateWindows() {
+  private _updateWindows(closing?: Meta.Window) {
     this.destroy_all_children();
 
-    const windows = global
+    // only real application windows, not the desktop, docks or popups
+    this._windows = global
       .get_window_actors()
-      .map((actor) => actor.meta_window);
+      .map((actor) => actor.meta_window)
+      .filter(
+        (w) =>
+          w && w !== closing && w.get_window_type() === Meta.WindowType.NORMAL,
+      );
 
-    for (const window of windows) {
+    for (const window of this._windows) {
+      if (!window || this._watched.has(window)) continue;
+      this._watched.add(window);
+      // "unmanaged" fires while the window is still in the actor list,
+      // so tell _updateWindows to leave it out
+      window.connectObject(
+        "unmanaged",
+        () => {
+          this._watched.delete(window);
+          this._updateWindows(window);
+        },
+        this,
+      );
+    }
+
+    for (const window of this._windows) {
       if (!window) continue;
       this.add_child(new WindowButton(window));
     }
@@ -186,5 +261,8 @@ export default class AppTab extends Extension {
       this._panel = undefined;
     }
     this.gsettings = undefined;
+
+    Main.wm.removeKeybinding("focus-next-window");
+    Main.wm.removeKeybinding("focus-previous-window");
   }
 }
