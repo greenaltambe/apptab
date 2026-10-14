@@ -3,6 +3,7 @@ import Gio from "gi://Gio";
 import Clutter from "gi://Clutter";
 import Meta from "gi://Meta";
 import Shell from "gi://Shell";
+import Pango from "gi://Pango";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import St from "gi://St";
@@ -18,7 +19,7 @@ class WindowButton extends St.Button {
   private _container: St.BoxLayout;
   private _icon?: Clutter.Actor;
 
-  constructor(window: Meta.Window) {
+  constructor(window: Meta.Window, width: number) {
     super({
       styleClass: "panel-button", // Using the gnommes official classes for panel instead of me tyring to gues what color they use
       reactive: true,
@@ -32,6 +33,11 @@ class WindowButton extends St.Button {
       vertical: false,
       yAlign: Clutter.ActorAlign.CENTER,
     });
+
+    // its natural size and gets centered inside the tab
+    this.set_width(width);
+    container.xAlign = Clutter.ActorAlign.CENTER;
+    container.xExpand = true;
 
     this._container = container;
     this._updateIcon();
@@ -48,6 +54,8 @@ class WindowButton extends St.Button {
       text: this._window.get_title() ?? "",
       yAlign: Clutter.ActorAlign.CENTER,
     });
+    // long titles shrink with "…" instead of overflowing the fixed-width
+    label.clutterText.ellipsize = Pango.EllipsizeMode.END;
     // titles are often empty at creation time, so keep the label in sync
     this._window.connectObject(
       "notify::title",
@@ -284,9 +292,10 @@ class Panel extends St.BoxLayout {
       );
     }
 
+    const width = Math.floor(this.get_width() / this._windows.length);
     for (const window of this._windows) {
       if (!window) continue;
-      this.add_child(new WindowButton(window));
+      this.add_child(new WindowButton(window, width));
     }
   }
 }
