@@ -20,6 +20,7 @@ class WindowButton extends St.Button {
     super({
       styleClass: "app-tab-window-button",
       reactive: true,
+      xExpand: true,
     });
 
     this._window = window;
@@ -56,11 +57,24 @@ class WindowButton extends St.Button {
       () => {
         if (this._window) {
           this._window.activate(global.get_current_time());
-          this.add_style_class_name("focused-window-button");
         }
       },
       this,
     );
+
+    // keep the focused class in sync with the window's focus state
+    this._syncFocus();
+    global.display.connectObject(
+      "notify::focus-window",
+      () => this._syncFocus(),
+      this,
+    );
+  }
+
+  private _syncFocus() {
+    if (this._window.has_focus())
+      this.add_style_class_name("focused-window-button");
+    else this.remove_style_class_name("focused-window-button");
   }
 }
 
