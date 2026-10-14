@@ -18,7 +18,7 @@ class WindowButton extends St.Button {
 
   constructor(window: Meta.Window) {
     super({
-      styleClass: "app-tab-window-button",
+      styleClass: "panel-button", // Using the gnommes official classes for panel instead of me tyring to gues what color they use
       reactive: true,
       xExpand: true,
     });
@@ -39,7 +39,6 @@ class WindowButton extends St.Button {
     }
     const label = new St.Label({
       text: this._window.get_title() ?? "",
-      styleClass: "app-tab-window-label",
       yAlign: Clutter.ActorAlign.CENTER,
     });
     // titles are often empty at creation time, so keep the label in sync
@@ -62,7 +61,7 @@ class WindowButton extends St.Button {
       this,
     );
 
-    // keep the focused class in sync with the window's focus state
+    // keep the checked state in sync with the window's focus state
     this._syncFocus();
     global.display.connectObject(
       "notify::focus-window",
@@ -72,9 +71,8 @@ class WindowButton extends St.Button {
   }
 
   private _syncFocus() {
-    if (this._window.has_focus())
-      this.add_style_class_name("focused-window-button");
-    else this.remove_style_class_name("focused-window-button");
+    // checked is the Shell's "selected" look for panel buttons
+    this.checked = this._window.has_focus();
   }
 }
 
@@ -91,7 +89,8 @@ class Panel extends St.BoxLayout {
 
   constructor(settings: Gio.Settings) {
     super({
-      styleClass: "app-tab-panel",
+      name: "panel",
+      styleClass: "panel",
       reactive: true,
     });
     this._settings = settings;
@@ -137,9 +136,10 @@ class Panel extends St.BoxLayout {
     );
 
     // Update the windows when a new window is created
-    global.display.connectObject(
-      "window-created",
-      () => this._updateWindows(),
+    global.display.connectObject("window-created", () => this._updateWindows());
+
+    global.workspaceManager.connectObject("active-workspace-changed", () =>
+      this._updateWindows(),
     );
 
     // Updae the focused window when keyboar window + j or window + k is pressed
@@ -212,13 +212,37 @@ class Panel extends St.BoxLayout {
     this.destroy_all_children();
 
     // only real application windows, not the desktop, docks or popups
-    this._windows = global
-      .get_window_actors()
-      .map((actor) => actor.meta_window)
-      .filter(
-        (w) =>
-          w && w !== closing && w.get_window_type() === Meta.WindowType.NORMAL,
-      );
+    let allWindows = [];
+
+    // check for settings if to show all from all workspaces or only from current workspace
+    if (this._settings.get_boolean("show-all-windows")) {
+      // Show all windows from all workspaces
+      allWindows = global.get_window_actors().map((actor) => actor.metaWindow);
+    } else {
+      // Show only windows from the current workspace
+      allWindows = global
+        .get_window_actors()
+        .map((actor) => actor.metaWindow)
+        .filter(
+          (window) =>
+            window?.get_workspace() ===
+            global.workspaceManager.get_active_workspace(),
+        );
+    }
+
+    const current = allWindows.filter(
+      (w): w is Meta.Window =>
+        !!w && w !== closing && w.get_window_type() === Meta.WindowType.NORMAL,
+    );
+
+    const kept = this._windows.filter(
+      (w): w is Meta.Window => !!w && current.includes(w),
+    );
+
+    const added = current
+      .filter((w) => !kept.includes(w))
+      .sort((a, b) => a.get_stable_sequence() - b.get_stable_sequence());
+    this._windows = [...kept, ...added];
 
     for (const window of this._windows) {
       if (!window || this._watched.has(window)) continue;
