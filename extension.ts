@@ -247,9 +247,17 @@ class Panel extends St.BoxLayout {
         );
     }
 
+    const listedTypes = [
+      Meta.WindowType.NORMAL,
+      Meta.WindowType.DIALOG,
+      Meta.WindowType.MODAL_DIALOG,
+    ];
     const current = allWindows.filter(
       (w): w is Meta.Window =>
-        !!w && w !== closing && w.get_window_type() === Meta.WindowType.NORMAL,
+        !!w &&
+        w !== closing &&
+        listedTypes.includes(w.get_window_type()) &&
+        !w.is_skip_taskbar(),
     );
 
     const kept = this._windows.filter(
