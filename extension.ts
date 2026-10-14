@@ -15,6 +15,8 @@ class WindowButton extends St.Button {
   }
 
   private _window: Meta.Window;
+  private _container: St.BoxLayout;
+  private _icon?: Clutter.Actor;
 
   constructor(window: Meta.Window) {
     super({
@@ -31,13 +33,17 @@ class WindowButton extends St.Button {
       yAlign: Clutter.ActorAlign.CENTER,
     });
 
-    const tracker = Shell.WindowTracker.get_default();
-    const app = tracker.get_window_app(this._window);
-    if (app) {
-      const icon = app.create_icon_texture(24);
-      icon.set_y_align(Clutter.ActorAlign.CENTER);
-      container.add_child(icon);
+    this._container = container;
+    this._updateIcon();
+    for (const prop of ["notify::wm-class", "notify::gtk-application-id"]) {
+      this._window.connectObject(prop, () => this._updateIcon(), this);
     }
+    Shell.WindowTracker.get_default().connectObject(
+      "tracked-windows-changed",
+      () => this._updateIcon(),
+      this,
+    );
+
     const label = new St.Label({
       text: this._window.get_title() ?? "",
       yAlign: Clutter.ActorAlign.CENTER,
@@ -69,6 +75,16 @@ class WindowButton extends St.Button {
       () => this._syncFocus(),
       this,
     );
+  }
+
+  private _updateIcon() {
+    const app = Shell.WindowTracker.get_default().get_window_app(this._window);
+    if (!app) return;
+
+    this._icon?.destroy();
+    this._icon = app.create_icon_texture(24);
+    this._icon.set_y_align(Clutter.ActorAlign.CENTER);
+    this._container.insert_child_at_index(this._icon, 0);
   }
 
   private _syncFocus() {
