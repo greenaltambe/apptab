@@ -148,7 +148,7 @@ class Panel extends St.BoxLayout {
       "shown",
       () => this.hide(),
       "hiding",
-      () => this.show(),
+      () => this._syncWithOverview(false),
       "hidden",
       () => this._syncWithOverview(),
       this,
@@ -184,8 +184,10 @@ class Panel extends St.BoxLayout {
     );
   }
 
-  private _syncWithOverview() {
-    if (Main.overview.visible) this.hide();
+  // The panel is visible only when there is something to list and the overview is closed.
+  // `overviewVisible` can be passed explicitly since during "hiding" the overview still reports visible.
+  private _syncWithOverview(overviewVisible = Main.overview.visible) {
+    if (overviewVisible || this._windows.length === 0) this.hide();
     else this.show();
   }
 
@@ -276,6 +278,8 @@ class Panel extends St.BoxLayout {
       .filter((w) => !kept.includes(w))
       .sort((a, b) => a.get_stable_sequence() - b.get_stable_sequence());
     this._windows = [...kept, ...added];
+
+    this._syncWithOverview();
 
     for (const window of this._windows) {
       if (!window || this._watched.has(window)) continue;
