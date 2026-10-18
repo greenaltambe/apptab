@@ -161,10 +161,16 @@ class Panel extends St.BoxLayout {
     );
 
     // Update the windows when a new window is created
-    global.display.connectObject("window-created", () => this._updateWindows());
+    global.display.connectObject(
+      "window-created",
+      () => this._updateWindows(),
+      this,
+    );
 
-    global.workspaceManager.connectObject("active-workspace-changed", () =>
-      this._updateWindows(),
+    global.workspaceManager.connectObject(
+      "active-workspace-changed",
+      () => this._updateWindows(),
+      this,
     );
 
     // Updae the focused window when keyboar window + j or window + k is pressed
@@ -334,6 +340,8 @@ class Panel extends St.BoxLayout {
       );
     }
 
+    if (this._windows.length === 0) return;
+
     const width = Math.floor(this.get_width() / this._windows.length);
     for (const window of this._windows) {
       if (!window) continue;
@@ -364,5 +372,7 @@ export default class AppTab extends Extension {
 
     Main.wm.removeKeybinding("focus-next-window");
     Main.wm.removeKeybinding("focus-previous-window");
+    Main.wm.removeKeybinding("move-position-to-left");
+    Main.wm.removeKeybinding("move-position-to-right");
   }
 }
