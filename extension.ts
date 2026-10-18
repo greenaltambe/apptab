@@ -351,8 +351,8 @@ class Panel extends St.BoxLayout {
 }
 
 export default class AppTab extends Extension {
-  gsettings?: Gio.Settings;
-  private _panel?: St.BoxLayout;
+  gsettings: Gio.Settings | null = null;
+  private _panel: St.BoxLayout | null = null;
 
   enable(): void {
     // initialize settings first
@@ -366,9 +366,9 @@ export default class AppTab extends Extension {
     if (this._panel) {
       Main.layoutManager.removeChrome(this._panel);
       this._panel.destroy();
-      this._panel = undefined;
     }
-    this.gsettings = undefined;
+    this._panel = null;
+    this.gsettings = null;
 
     Main.wm.removeKeybinding("focus-next-window");
     Main.wm.removeKeybinding("focus-previous-window");

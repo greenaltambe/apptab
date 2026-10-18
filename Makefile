@@ -14,8 +14,10 @@ dist/extension.js dist/prefs.js: node_modules/.modules.yaml *.ts
 schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xml
 	glib-compile-schemas schemas
 
-$(NAME).zip: dist/extension.js dist/prefs.js schemas/gschemas.compiled
-	@cp -r schemas dist/
+$(NAME).zip: dist/extension.js dist/prefs.js
+	@rm -rf dist/schemas $(NAME).zip
+	@mkdir -p dist/schemas
+	@cp schemas/*.gschema.xml dist/schemas/
 	@cp metadata.json stylesheet.css dist/
 	@(cd dist && zip ../$(NAME).zip -9r .)
 

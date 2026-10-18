@@ -12,6 +12,12 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
   fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
     this._settings = this.getSettings();
 
+    // drop the settings reference once the window is gone
+    window.connect("close-request", () => {
+      this._settings = undefined;
+      return false;
+    });
+
     const page = new Adw.PreferencesPage({
       title: _("General"),
       iconName: "dialog-information-symbolic",
