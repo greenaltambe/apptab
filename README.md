@@ -1,43 +1,86 @@
 # App Tab
 
-A GNOME Shell extension that adds a taskbar-style panel at the bottom of the primary monitor. It shows one button (icon and title) per open window, and the focused window is highlighted.
+**App Tab** is a GNOME Shell extension that brings i3-style horizontal window tabbing to the GNOME desktop.
 
-Targets GNOME Shell 50.
+The main goal was to make switching between windows in the current workspace faster while keeping all open windows visible, so one can easily see which windows are present without having to cycle through them as in alt tab.
+
+Tested on **GNOME 50**.
 
 ## Features
 
-- A button for each normal application window; click to activate it.
-- The focused window's button is highlighted, using the Shell's own panel styling.
-- Button order stays stable and doesn't follow stacking order. New windows go at the end.
-- The panel hides while the overview is open.
-- Keyboard shortcuts to move focus to the next or previous window. They stop at the first and last window instead of wrapping.
+- **Window overview:** Displays a panel at the bottom of the screen containing all windows in the current workspace, with an option to show windows from all workspaces.
+- **Click to focus:** Click a window's tab in the panel to bring that window into focus.
+- **Keyboard shortcuts:** Quickly switch between windows and move windows around using keyboard shortcuts.
 
-## Settings
+## Recommended Extensions and Configuration
 
-| Setting               | Default   | Description                                               |
-| --------------------- | --------- | --------------------------------------------------------- |
-| Panel height          | 32        | Height of the panel in pixels                             |
-| Show all windows      | off       | Show windows from all workspaces, not only the active one |
-| Focus next window     | `Super+J` | Focus the next window in the panel                        |
-| Focus previous window | `Super+K` | Focus the previous window in the panel                    |
+I recommend using App Tab alongside the [Space Bar](https://extensions.gnome.org/extension/5090/space-bar/) GNOME extension. Space Bar makes it easier to switch between workspaces and move windows across workspaces using keyboard shortcuts.
 
-## Build and install
+### Fixing Workspace Switching Shortcuts
 
-Requires `pnpm`, `zip` and `glib-compile-schemas`.
+You may encounter an issue where pressing `Super + 1`, `Super + 2`, and so on launches or switches to applications instead of changing workspaces.
+
+To fix this, disable the conflicting GNOME Shell application-switching shortcuts:
+
+1. Open **Dconf Editor**.
+2. Navigate to `org.gnome.shell.keybindings`.
+3. Find the key named `switch-to-application-1`.
+4. Change its value from:
+
+   ```text
+   ['<Super>1']
+   ```
+
+   to:
+
+   ```text
+   []
+   ```
+
+5. Repeat this for the other `switch-to-application-*` keys that conflict with your workspace shortcuts.
+
+This frees the `Super + number` shortcuts for workspace switching, provided they are configured by Space Bar or another extension.
+
+## Build and Install
+
+### Prerequisites
+
+Make sure the following tools are installed:
+
+- `pnpm`
+- `zip`
+- `glib-compile-schemas`
+
+### Install the Extension
+
+Run the following command from the project directory:
 
 ```sh
-make install   # builds, packs apptab.zip and installs it
+make install
 ```
 
-Then enable it with `gnome-extensions enable apptab@greenaltambe@github.com`. On Wayland you need to log out and back in for code changes to load.
+This builds the extension, packages it into `apptab.zip`, and installs it.
 
-Other targets: `make pack` builds only the zip, and `make clean` removes build output.
+Enable the extension with:
 
-## Todo
+```sh
+gnome-extensions enable apptab@greenaltambe@github.com
+```
 
-1. Add a setting to show the panel on top of the screen instead of the bottom (Most probably to add in the gnomes top panel itself).
-2. Add a setting to open apps in full screen by default.
-3. Add a setting to make tabs vertical like sway/i3. (Most probably will not happen).
-4. Make the tabs in the panel draggable or add keyboard shortcut to reorder. (Not draggable yet, but keyboard shortcut exists).
-5. Add button to close tabs/windows.
-6. Hide the panel when a full screen window like game or full screen vide is open.
+**Note for Wayland users:** After making code changes, log out of your GNOME session and log back in to load the updated extension code.
+
+### Other Make Targets
+
+| Command        | Description                                                                |
+| -------------- | -------------------------------------------------------------------------- |
+| `make install` | Builds, packages, and installs the extension.                              |
+| `make pack`    | Builds and packages the extension into `apptab.zip` without installing it. |
+| `make clean`   | Removes generated build output.                                            |
+
+## TODO
+
+- **Panel position:** Add a setting to display the window panel at the top of the screen instead of the bottom, maybe add it into GNOME's existing top bar.
+- **Default fullscreen mode:** Add an option to open applications in fullscreen mode by default.
+- **Vertical tabs:** Add an option to arrange tabs vertically, similar to Sway or i3. (I will not add this most probably).
+- **Reorder tabs:** Allow users to reorder tabs by dragging them or using keyboard shortcuts. Keyboard shortcuts for reordering already exist; drag-and-drop support has not been implemented.
+- **Close windows:** Add a button to close windows directly from the panel.
