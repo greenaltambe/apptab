@@ -20,5 +20,13 @@
            <default><![CDATA[['<Super>j']]]></default>
             <summary>Keybinding to focus the previous window.</summary>
        </key>
+       <key name="move-position-to-right" type="as">
+           <default><![CDATA[['<Super><Shift>k']]]></default>
+            <summary>Keybinding to move the window to the right.</summary>
+       </key>
+         <key name="move-position-to-left" type="as">
+           <default><![CDATA[['<Super><Shift>j']]]></default>
+            <summary>Keybinding to move the window to the left.</summary>
+       </key>
     </schema>
 </schemalist>

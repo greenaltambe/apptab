@@ -182,6 +182,44 @@ class Panel extends St.BoxLayout {
       Shell.ActionMode.NORMAL,
       () => this._focusPreviousWindow(),
     );
+
+    // Change the winodw order with window + shift + j or window + shift + k
+    Main.wm.addKeybinding(
+      "move-position-to-left",
+      this._settings,
+      Meta.KeyBindingFlags.NONE,
+      Shell.ActionMode.NORMAL,
+      () => this._moveWindowPosition(-1),
+    );
+    Main.wm.addKeybinding(
+      "move-position-to-right",
+      this._settings,
+      Meta.KeyBindingFlags.NONE,
+      Shell.ActionMode.NORMAL,
+      () => this._moveWindowPosition(1),
+    );
+  }
+
+  private _moveWindowPosition(step: number) {
+    const n = this._windows.length;
+    if (n === 0) return;
+
+    const current = this._windows.findIndex((w) => w?.has_focus());
+    if (current < 0) return; // nothing focused
+
+    const newIndex = Math.min(n - 1, Math.max(0, current + step));
+    if (newIndex === current) return; // no change
+
+    const window = this._windows[current];
+    if (!window) return;
+
+    // Remove the window from its current position
+    this._windows.splice(current, 1);
+    // Insert the window at the new position
+    this._windows.splice(newIndex, 0, window);
+
+    // Update the windows in the panel
+    this._updateWindows();
   }
 
   // The panel is visible only when there is something to list and the overview is closed.

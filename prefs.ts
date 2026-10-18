@@ -53,9 +53,19 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
       title: _("Focus Next Windows"),
     });
 
-    // This settings is keyboard
+    // This settings is keyboard shortcut to focus the previous window in the panel
     const focusPreviousWindow = new Adw.EntryRow({
       title: _("Focus Previous Windows"),
+    });
+
+    // The below settings will move the current focused window to left
+    const movePositionToLeft = new Adw.EntryRow({
+      title: _("Move to left"),
+    });
+
+    // The below settings will move the current focused window to right
+    const movePositionToRight = new Adw.EntryRow({
+      title: _("Move to right"),
     });
 
     // Add the settings and groups to the window
@@ -64,6 +74,8 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
 
     behaviorGroup.add(focusNextWindow);
     behaviorGroup.add(focusPreviousWindow);
+    behaviorGroup.add(movePositionToLeft);
+    behaviorGroup.add(movePositionToRight);
 
     page.add(generalGroup);
     page.add(behaviorGroup);
@@ -95,6 +107,23 @@ export default class GnomeRectanglePreferences extends ExtensionPreferences {
     focusPreviousWindow.connect("changed", () => {
       this._settings!.set_strv("focus-previous-window", [
         focusPreviousWindow.text,
+      ]);
+    });
+
+    movePositionToLeft.text =
+      this._settings!.get_strv("move-position-to-left")[0] ?? "";
+    movePositionToRight.text =
+      this._settings!.get_strv("move-position-to-right")[0] ?? "";
+
+    movePositionToLeft.connect("changed", () => {
+      this._settings!.set_strv("move-position-to-left", [
+        movePositionToLeft.text,
+      ]);
+    });
+
+    movePositionToRight.connect("changed", () => {
+      this._settings!.set_strv("move-position-to-right", [
+        movePositionToRight.text,
       ]);
     });
 

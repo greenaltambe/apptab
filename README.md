@@ -38,6 +38,6 @@ Other targets: `make pack` builds only the zip, and `make clean` removes build o
 1. Add a setting to show the panel on top of the screen instead of the bottom (Most probably to add in the gnomes top panel itself).
 2. Add a setting to open apps in full screen by default.
 3. Add a setting to make tabs vertical like sway/i3. (Most probably will not happen).
-4. Make the tabs in the panel draggable or add keyboard shortcut to reorder.
+4. Make the tabs in the panel draggable or add keyboard shortcut to reorder. (Not draggable yet, but keyboard shortcut exists).
 5. Add button to close tabs/windows.
 6. Hide the panel when a full screen window like game or full screen vide is open.
