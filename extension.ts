@@ -231,7 +231,13 @@ class Panel extends St.BoxLayout {
   // The panel is visible only when there is something to list and the overview is closed.
   // `overviewVisible` can be passed explicitly since during "hiding" the overview still reports visible.
   private _syncWithOverview(overviewVisible = Main.overview.visible) {
-    if (overviewVisible || this._windows.length === 0) this.hide();
+    const currentlyFocusedWindow = global.display.focusWindow;
+    if (
+      overviewVisible ||
+      this._windows.length === 0 ||
+      (currentlyFocusedWindow && currentlyFocusedWindow.is_fullscreen())
+    )
+      this.hide();
     else this.show();
   }
 
