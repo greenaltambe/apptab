@@ -145,9 +145,9 @@ class Panel extends St.BoxLayout {
     // keyboard/hot corner, so also sync on "shown"/"hidden", which always fire.
     Main.overview.connectObject(
       "showing",
-      () => this.hide(),
+      () => this._setPanelVisible(false),
       "shown",
-      () => this.hide(),
+      () => this._setPanelVisible(false),
       "hiding",
       () => this._syncWithOverview(false),
       "hidden",
