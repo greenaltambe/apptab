@@ -108,6 +108,7 @@ class Panel extends St.BoxLayout {
     GObject.registerClass(this); // this is required to make the c - libs know that this exists
   }
 
+  private _isAnimatingToVisible: boolean | null = null;
   private _settings: Gio.Settings; // this will be the settings obj that will be passed as a parameter to the constructor of the panel class
   private _watched = new Set<Meta.Window>(); // windows we already listen to for "unmanaged"
   private _windows: (Meta.Window | null)[]; // this will be the list of windows that will be displayed in the panel
@@ -206,6 +207,36 @@ class Panel extends St.BoxLayout {
     );
   }
 
+  private _setPanelVisible(visible: boolean): void {
+    if (this._isAnimatingToVisible === visible) return;
+
+    this._isAnimatingToVisible = visible;
+
+    if (visible) {
+      // Make the actor visible before fading in.
+      this.show();
+      this.opacity = 0;
+      this.translationY = 8;
+    }
+
+    this.ease({
+      opacity: visible ? 255 : 0,
+      translationY: visible ? 0 : 8,
+      duration: 180,
+      mode: visible
+        ? Clutter.AnimationMode.EASE_OUT_CUBIC
+        : Clutter.AnimationMode.EASE_IN_CUBIC,
+      onComplete: () => {
+        if (this._isAnimatingToVisible !== visible) return;
+
+        if (!visible) {
+          this.hide();
+          this.translationY = 0;
+        }
+      },
+    });
+  }
+
   private _moveWindowPosition(step: number) {
     const n = this._windows.length;
     if (n === 0) return;
@@ -237,8 +268,8 @@ class Panel extends St.BoxLayout {
       this._windows.length === 0 ||
       (currentlyFocusedWindow && currentlyFocusedWindow.is_fullscreen())
     )
-      this.hide();
-    else this.show();
+      this._setPanelVisible(false);
+    else this._setPanelVisible(true);
   }
 
   private _focusWindow(window: Meta.Window) {
