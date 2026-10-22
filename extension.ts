@@ -165,6 +165,10 @@ class Panel extends St.BoxLayout {
     global.display.connectObject(
       "window-created",
       () => this._updateWindows(),
+      "notify::focus-window",
+      () => this._syncWithOverview(),
+      "in-fullscreen-changed",
+      () => this._syncWithOverview(),
       this,
     );
 
